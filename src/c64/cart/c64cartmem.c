@@ -459,9 +459,14 @@ void cart_config_changed_slotmain(uint8_t mode_phi1, uint8_t mode_phi2, unsigned
     } else {
         machine_handle_pending_alarms(0);
     }
-
-    export_slotmain.game = mode_phi2 & 1;
-    export_slotmain.exrom = ((mode_phi2 >> 1) & 1) ^ 1;
+    if(machine_class == VICE_MACHINE_C128)
+    {
+        export_slotmain.game = 0;
+        export_slotmain.exrom = 0;
+    } else {
+        export_slotmain.game = mode_phi2 & 1;
+        export_slotmain.exrom = ((mode_phi2 >> 1) & 1) ^ 1;
+    }
 
     cart_romhbank_set_slotmain((mode_phi2 >> CMODE_BANK_SHIFT) & CMODE_BANK_MASK);
     cart_romlbank_set_slotmain((mode_phi2 >> CMODE_BANK_SHIFT) & CMODE_BANK_MASK);
