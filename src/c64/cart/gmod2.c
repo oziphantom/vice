@@ -149,6 +149,7 @@ uint8_t gmod2_io1_read(uint16_t addr)
 
 uint8_t gmod2_io1_peek(uint16_t addr)
 {
+    if((addr & 0xff) == 0xff) return (uint8_t)gmod2_bank;
     return (m93c86_read_data() << 7);
 }
 
