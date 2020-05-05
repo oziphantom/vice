@@ -165,7 +165,7 @@ extern int cur_len, last_len;
 %token CMD_ATTACH CMD_DETACH CMD_MON_RESET CMD_TAPECTRL CMD_CARTFREEZE
 %token CMD_CPUHISTORY CMD_MEMMAPZAP CMD_MEMMAPSHOW CMD_MEMMAPSAVE
 %token CMD_COMMENT CMD_LIST CMD_STOPWATCH RESET
-%token CMD_EXPORT CMD_AUTOSTART CMD_AUTOLOAD CMD_MAINCPU_TRACE
+%token CMD_EXPORT CMD_AUTOSTART CMD_AUTOLOAD CMD_MAINCPU_TRACE CMD_VERIFY
 %token<str> CMD_LABEL_ASGN
 %token<i> L_PAREN R_PAREN ARG_IMMEDIATE REG_A REG_X REG_Y COMMA INST_SEP
 %token<i> L_BRACKET R_BRACKET LESS_THAN REG_U REG_S REG_PC REG_PCR
@@ -387,18 +387,21 @@ checkpoint_rules: CMD_BREAK opt_mem_op address_opt_range opt_if_cond_expr end_cm
                   { mon_breakpoint_print_checkpoints(); }
                 | CMD_BBREAK BANKNAME opt_mem_op address_opt_range opt_if_cond_expr end_cmd
                 {
-                  mon_out("bbreak called with `%s'\n", $2);
-                      int newbank;
-                      newbank = mon_interfaces[1]->mem_bank_from_name($2);
-                      if (newbank < 0) {
-                      mon_out("Unknown bank name `%s'\n", $2);
+                      if(mon_interfaces[1]->mem_bank_seen_by_cpu == NULL) {
+                          mon_out("bbreak is not supported on this machine");
                       } else {
-                        if ($3) {
-                            temp = mon_breakpoint_add_checkpoint(newbank, $4[0], $4[1], TRUE, $3, FALSE);
+                        int newbank;
+                        newbank = mon_interfaces[1]->mem_bank_from_name($2);
+                        if (newbank < 0) {
+                        mon_out("Unknown bank name `%s'\n", $2);
                         } else {
-                            temp = mon_breakpoint_add_checkpoint(newbank, $4[0], $4[1], TRUE, e_exec, FALSE);
+                          if ($3) {
+                              temp = mon_breakpoint_add_checkpoint(newbank, $4[0], $4[1], TRUE, $3, FALSE);
+                          } else {
+                              temp = mon_breakpoint_add_checkpoint(newbank, $4[0], $4[1], TRUE, e_exec, FALSE);
+                          }
+                          mon_breakpoint_set_checkpoint_condition(temp, $5);
                         }
-                        mon_breakpoint_set_checkpoint_condition(temp, $5);
                       }
                 }
                 | CMD_UNTIL address_opt_range end_cmd
@@ -584,9 +587,11 @@ monitor_misc_rules: CMD_DISK rest_of_line end_cmd
                   ;
 
 disk_rules: CMD_LOAD filename device_num opt_address end_cmd
-            { mon_file_load($2, $3, $4, FALSE); }
+            { mon_file_load($2, $3, $4, false, false); }
           | CMD_BLOAD filename device_num opt_address end_cmd
-            { mon_file_load($2, $3, $4, TRUE); }
+            { mon_file_load($2, $3, $4, true, false); }
+          | CMD_VERIFY filename device_num opt_address end_cmd
+            { mon_file_load($2, $3, $4, false, true); }
           | CMD_SAVE filename device_num address_range end_cmd
             { mon_file_save($2, $3, $4[0], $4[1], FALSE); }
           | CMD_SAVE filename error

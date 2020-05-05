@@ -171,13 +171,14 @@ static int mon_file_close(unsigned int secondary, int device)
 
 
 void mon_file_load(const char *filename, int device, MON_ADDR start_addr,
-                   bool is_bload)
+                   bool is_bload, bool is_verify)
 {
     uint16_t adr, load_addr = 0, basic_addr;
     uint8_t b1 = 0, b2 = 0;
     int ch = 0;
     MEMSPACE mem;
     int origbank = 0;
+    bool match = true;
 
     if (mon_file_open(filename, 0, device) < 0) {
         mon_out("Cannot open %s.\n", filename);
@@ -216,7 +217,11 @@ void mon_file_load(const char *filename, int device, MON_ADDR start_addr,
         mem = addr_memspace(start_addr);
     }
 
-    mon_out("Loading %s", filename);
+    if(is_verify) {
+        mon_out("Verifying %s", filename);
+    } else {
+        mon_out("Loading %s", filename);
+    }
     mon_out(" from %04X\n", adr);
 
     if (machine_class == VICE_MACHINE_C64DTV) {
@@ -229,8 +234,11 @@ void mon_file_load(const char *filename, int device, MON_ADDR start_addr,
         if (mon_file_read(&load_byte, 0, device) < 0) {
             break;
         }
-        mon_set_mem_val(mem, ADDR_LIMIT(adr + ch), load_byte);
-
+        if(is_verify) {
+            match &= mon_get_mem_val(mem, ADDR_LIMIT(adr+ ch)) == load_byte;
+        } else {
+            mon_set_mem_val(mem, ADDR_LIMIT(adr + ch), load_byte);
+        }
         /* Hack to be able to read large .prgs for x64dtv */
         if ((machine_class == VICE_MACHINE_C64DTV) &&
             (ADDR_LIMIT(adr + ch) == 0xffff) &&
@@ -250,16 +258,18 @@ void mon_file_load(const char *filename, int device, MON_ADDR start_addr,
     }
 
     mon_out("to %04X (%x bytes)\n", ADDR_LIMIT(adr + ch), (unsigned int)ch);
-
-    /* set end of load addresses like kernal load if
-     * 1. loading .prg file
-     * 2. loading to BASIC start
-     * 3. loading to computer bank/memory
-     */
-    if ((is_bload == FALSE) && (load_addr == basic_addr) && (mem == e_comp_space)) {
-        mem_set_basic_text(adr, (uint16_t)(adr + ch));
+    if(is_verify) {
+        mon_out(match ? "Passed\n" : "Failed\n");
+    } else {
+        /* set end of load addresses like kernal load if
+        * 1. loading .prg file
+        * 2. loading to BASIC start
+        * 3. loading to computer bank/memory
+        */
+        if ((is_bload == FALSE) && (load_addr == basic_addr) && (mem == e_comp_space)) {
+            mem_set_basic_text(adr, (uint16_t)(adr + ch));
+        }
     }
-
     mon_file_close(0, device);
 }
 
