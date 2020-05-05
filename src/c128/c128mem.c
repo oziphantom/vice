@@ -1320,6 +1320,144 @@ void mem_bank_poke(int bank, uint16_t addr, uint8_t byte, void *context)
     mem_bank_write(bank, addr, byte, context);
 }
 
+bool is_conf_bank1(unsigned int conf) 
+{
+    return (conf & 0x20) == 0x20;
+}
+
+unsigned int get_conf_low_bank(unsigned int conf)
+{
+    return (conf & 0x1);
+}
+
+unsigned int get_conf_mid_bank(unsigned int conf)
+{
+    return (conf & 0x6) >> 1;
+}
+
+unsigned int get_conf_hi_bank(unsigned int conf)
+{
+    return (conf & 0x18) >> 3;
+}
+
+bool is_conf_IO_visible(unsigned int conf)
+{
+    return (conf & 0x40) == 0x40;
+}
+
+bool do_check_ram_ranges_for_bank_value(uint16_t addr, unsigned int conf, int flags)
+{
+    if(addr < 0x4000) {
+        return true;
+    }
+    if(addr < 0x8000) {
+        return get_conf_low_bank(conf) == flags;
+    }
+    if(addr < 0xc000) {
+        return get_conf_mid_bank(conf) == flags;
+    }
+    if(addr < 0xD000) {
+        return get_conf_hi_bank(conf) == flags;
+    }
+    if(addr <0xE000) {
+        if( is_conf_IO_visible(conf) ) {
+            return false;
+        }
+    }
+    return get_conf_hi_bank(conf) == flags;
+}
+
+bool mem_bank_seen_by_cpu(int bank, uint16_t addr)
+{
+    int mem_conf = mem_config;
+
+    int ZP_Addr = mem_page_zero - mem_ram;
+    int SP_Addr = mem_page_one - mem_ram;
+    if( bank == 9 ) /* the VDC bank, really how are you running code in the VDC?? */
+    {
+        return false;
+    }
+    if( bank == 0 ) /* CPU bank/default, just yes */
+    {
+        return true;
+    }
+    if( bank == 8) /* C64 ROM, I don't care */
+    {
+        return false;
+    }
+
+    if( addr < 0x100 ) {    /* we are in zero page so we need to be sure sure*/
+        mem_conf |= 0x1f;   /*00011111 set to all RAM bits*/
+        mem_conf &= 0x3f;   /*00111111 clear I/O enable bit*/
+        /* we need to possibly patch the address else where */
+        addr += ZP_Addr;    /* we need offset the ZP to the "real" address */
+    } else if ( addr < 0x200 ) { /* we are in the stack page so we need to adjust */
+        mem_conf |= 0x1f;   /*00011111 set to all RAM bits*/
+        mem_conf &= 0x3f;   /*00111111 clear I/O enable bit*/
+        /* we need to possibly patch the address else where */
+        addr += SP_Addr;    /* we need offset the ZP to the "real" address */
+    }
+
+    if( bank == 1 || bank == 4) {/* ram, ram1 */
+        /*we have to make sure that if ZP or Stack is moved, if we are talking to the area that it was we now 
+        map back to the normal ZP/Stack */
+        if( addr >= ZP_Addr && addr <= ZP_Addr + 0xFF) {
+            addr &= 0xFF;
+        } else if( addr >= SP_Addr && addr <= SP_Addr + 0xFF) {
+            addr &= 0xFF | 0x100;
+        }   
+    }
+
+    /*so now if we are in RAM we have delt with the ZP/SP relocation */
+    switch(bank) 
+    {
+        case 0: /* cpu */
+        case 9: /* VDC - already delt with */
+        case 8: /* C64ROM - already delt with */
+            return true;
+        case 1: /* ram bank 0 */
+        {
+            if(is_conf_bank1(mem_conf)) /* are we in bank 0 */
+            {
+                return false; /* no */
+            }
+            return do_check_ram_ranges_for_bank_value(addr, mem_conf, 3);
+        }
+        case 2: /* rom but not func */
+        {
+            if(addr < 0x4000) {
+                return false;
+            }
+            return do_check_ram_ranges_for_bank_value(addr, mem_conf, 0);
+        }
+        case 3: /* io */
+        case 4: /* ram bank 1 */
+        {
+            if(is_conf_bank1(mem_conf) == false) /* are we in bank 0 */
+            {
+                return false; /* no */
+            }
+            return do_check_ram_ranges_for_bank_value(addr, mem_conf, 3);
+        }
+        case 5: /* internal function */
+        {
+            if(addr < 0x8000) {
+                return false;
+            }
+            return do_check_ram_ranges_for_bank_value(addr, mem_conf, 1);
+        }
+        case 6: /* external function */
+        case 7: /* cart */
+        {
+            if(addr < 0x8000) {
+                return false;
+            }
+            return do_check_ram_ranges_for_bank_value(addr, mem_conf, 2);
+        }        
+    }
+    return false;
+}
+
 static int mem_dump_io(void *context, uint16_t addr)
 {
     if ((addr >= 0xdc00) && (addr <= 0xdc3f)) {

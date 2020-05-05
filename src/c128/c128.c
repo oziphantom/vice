@@ -1010,7 +1010,9 @@ static void c128_monitor_init(void)
     }
 
     /* Initialize the monitor.  */
-    monitor_init(maincpu_monitor_interface_get(), drive_interface_init, asmarray);
+    monitor_interface_t* interface = maincpu_monitor_interface_get();
+    interface->mem_bank_seen_by_cpu  = mem_bank_seen_by_cpu;
+    monitor_init(interface, drive_interface_init, asmarray);
 }
 
 void machine_setup_context(void)

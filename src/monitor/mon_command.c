@@ -388,6 +388,20 @@ static const mon_cmds_t mon_cmd_array[] = {
       NO_FILENAME_ARG
     },
 
+    { "bbreak", "bbk",
+      "[bank] [load|store|exec] [address [address] [if <cond_expr>]]",
+      "Set a breakpoint in a bank, If no address is given, the currently \n"
+      "valid break-points are printed.\n"
+      "If an address is given, a breakpoint is set for that address and the\n"
+      "breakpoint number is printed.\n"
+      "`load|store|exec' is either `load', `store' or `exec' (or any combina-\n"
+      "tion of these) to specify on which operation the monitor breaks. If\n"
+      "not specified, the monitor breaks on `exec'.\n"
+      "A conditional expression can also be specified for the breakpoint.\n"
+      "For more information on conditions, see the CONDITION command.",
+      NO_FILENAME_ARG
+    },
+
     { "command", "",
       "<checknum> \"<Command>\"",
       "Specify `command' as the command to execute when checkpoint `checknum'\n"

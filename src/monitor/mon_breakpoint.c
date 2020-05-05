@@ -521,8 +521,10 @@ bool mon_breakpoint_check_checkpoint(MEMSPACE mem, unsigned int addr, unsigned i
         ptr = ptr->next;
         if (cp && cp->enabled == e_ON) {
             if(cp->bank > 0) {
-                if(mon_interfaces[mem]->mem_bank_seen_by_cpu(cp->bank, addr_location(addr)) == false) {
-                    continue;
+                if(mon_interfaces[mem]->mem_bank_seen_by_cpu != NULL) {
+                    if(mon_interfaces[mem]->mem_bank_seen_by_cpu(cp->bank, addr_location(addr)) == false) {
+                        continue;
+                    }
                 }
             }
             /* If condition test fails, skip this checkpoint */

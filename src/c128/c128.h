@@ -53,6 +53,10 @@
 #define C128_MACHINE_SWEDISH   6
 #define C128_MACHINE_SWISS     7
 
+#ifndef HAS_MEM_BANK_SEEN_BY_CPU
+#define HAS_MEM_BANK_SEEN_BY_CPU 1
+#endif
+
 struct cia_context_s;
 struct printer_context_s;
 struct tpi_context_s;
