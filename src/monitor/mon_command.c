@@ -655,6 +655,16 @@ static const mon_cmds_t mon_cmd_array[] = {
       FILENAME_ARG
     },
 
+    { "verify", "v",
+      "\"<filename>\" <device> [<address>]",
+      "Verfiy that memory matches the specified file in memory at the\n"
+      "specified address. Set BASIC pointers appropriately if loaded into\n"
+      "computer memory (not all emulators). Use (otherwise ignored) two-byte\n"
+      "load address from file if no address specified.\n"
+      "If device is 0, the file is read from the file system.",
+      FILENAME_ARG
+    },
+
     { "pwd", "",
       NULL,
       "Show current working directory.",
