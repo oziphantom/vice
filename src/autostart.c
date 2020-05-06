@@ -1718,13 +1718,13 @@ int autostart_autodetect(const char *file_name, const char *program_name,
             return 0;
         }
 
-        if (resources_set_int("Datasette", datasette_temp) < 0) {
-            log_error(LOG_ERR, "Failed to restore Datasette status.");
-        }
         if (resources_set_int("TapecartEnabled", tapecart_temp) < 0) {
             log_error(LOG_ERR, "Failed to restore Tapecart status.");
         }
         
+        if (resources_set_int("Datasette", datasette_temp) < 0) {
+            log_error(LOG_ERR, "Failed to restore Datasette status.");
+        }
     }
 
     if (autostart_snapshot(file_name, program_name) == 0) {
