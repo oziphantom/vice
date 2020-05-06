@@ -3,22 +3,22 @@
 
 
 #### Some Shortcuts restored to WINVICE shortcuts
-Alt + M = Monitor
-Alt + H = Mouse Capture (new)
-Alt + R = Reset
-Alt + Shift + R = Hard Reset
-Atl + X = Quit
+- Alt + M = Monitor
+- Alt + H = Mouse Capture (new)
+- Alt + R = Reset
+- Alt + Shift + R = Hard Reset
+- Atl + X = Quit
 
 #### GMod2 Cart Changes
-From a monitor context ( io, break points etc ) 
-DEFF now returns the internal bank number 
+From a monitor context ( io, break points etc ) DEFF now returns the internal bank number 
+
 This does not appear when accessed in code, it will still return the normal value. 
-This allows you to get the GMod2 bank for break points. For example
-break $8010 if @io:$DEFF == 2
-to break upon the $8010 in the 2nd bank of GMod2. Note this does not detect if the cart
-is enabled. So you can still get false positives.
-you can now also do 
-break $0810 if @$d020 == $f0 if you just want the "cpu" bank
+
+This allows you to get the GMod2 bank for break points. 
+For example `break $8010 if @io:$DEFF == 2` to break upon the $8010 in the 2nd bank of GMod2. Note this does not detect if the cart is enabled. So you can still get false positives.
+
+You can now also do 
+`break $0810 if @$d020 == $f0` if you just want the "cpu" bank
 
 Note that Carts are broken in x128 at the moment, they will not switch to C64 mode.
 
