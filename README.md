@@ -24,14 +24,14 @@ Note that Carts are broken in x128 at the moment, they will not switch to C64 mo
 
 #### New Monitor Commands
 _bbreak/bbk_ Break Bank (x64sc and X128 only )
-bbreak <bankname> [address-<address>] <condition>
+bbreak <bankname> [address-\<address>] <condition>
 this allows you to set a break point in a specific bank
 so if you want to break upon C64 KERNAL rom FFD2 and not RAM FFD2 you can do
-bbreak rom $ffd2
+`bbreak rom $ffd2`
 to fix the false positives above in the GMod2 Changes you can do
-bbreak cart $8010 if @io:$DEFF == 2
+`bbreak cart $8010 if @io:$DEFF == 2`
 This is most handy in x128 as you can now do
-bbreak ram1
+`bbreak ram1`
 
 This needs heavy testing, especially on x128 where ZP and Stack relocation make a mess 
 of things.
