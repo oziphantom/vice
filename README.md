@@ -45,7 +45,8 @@ New autoload inject data format Long Non-Linear
 "inject into RAM LNL" or -autostartprgmode 3
 This is a file format exported from 64Tass ( use -n -x -X ) 
 it takes the form of 
-    00 len lo
+
+>    00 len lo
     01 len hi
     02 len bank
     03 addr lo
@@ -61,7 +62,8 @@ it takes the form of
     00
 
 Where banks map to
-    Bank 00 = RAM
+
+>    Bank 00 = RAM
     Bank 01 = RAM Bank 1
     Bank 03 = IO
     Bank 05 = Interal Function RAM
