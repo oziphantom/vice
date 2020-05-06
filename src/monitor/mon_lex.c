@@ -1,5 +1,5 @@
 
-#line 3 "mon_lex.c"
+#line 2 "mon_lex.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -1806,10 +1806,10 @@ send:
     *d = 0;
 }
 
-#line 1810 "mon_lex.c"
+#line 1809 "mon_lex.c"
 #define YY_NO_INPUT 1
 
-#line 1813 "mon_lex.c"
+#line 1812 "mon_lex.c"
 
 #define INITIAL 0
 #define FNAME 1
@@ -2061,7 +2061,7 @@ YY_DECL
    }
 
 
-#line 2065 "mon_lex.c"
+#line 2064 "mon_lex.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -3787,7 +3787,7 @@ YY_RULE_SETUP
 #line 596 "mon_lex.l"
 ECHO;
 	YY_BREAK
-#line 3791 "mon_lex.c"
+#line 3790 "mon_lex.c"
 			case YY_STATE_EOF(INITIAL):
 			case YY_STATE_EOF(FNAME):
 			case YY_STATE_EOF(CMD):
