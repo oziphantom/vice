@@ -46,29 +46,29 @@ New autoload inject data format Long Non-Linear
 This is a file format exported from 64Tass ( use -n -x -X ) 
 it takes the form of 
 
-`    00 len lo
-    01 len hi
-    02 len bank
-    03 addr lo
-    04 addr hi
-    05 addr bank
-    06 .. Len number of bytes that hold data
-    XX len lo
-    XX+1 len hi
-    ...
-    until 
-    00
-    00
-    00`
+`    00 len lo  
+    01 len hi  
+    02 len bank  
+    03 addr lo  
+    04 addr hi  
+    05 addr bank  
+    06 .. Len number of bytes that hold data  
+    XX len lo  
+    XX+1 len hi  
+    ...  
+    until   
+    00  
+    00  
+    00  `
 
 Where banks map to
 
-`    Bank 00 = RAM
-    Bank 01 = RAM Bank 1
-    Bank 03 = IO
-    Bank 05 = Interal Function RAM
-    Bank 06 = External Function RAM
-    Bank 09 = VDC Memory`
+`    Bank 00 = RAM  
+    Bank 01 = RAM Bank 1  
+    Bank 03 = IO  
+    Bank 05 = Interal Function RAM  
+    Bank 06 = External Function RAM  
+    Bank 09 = VDC Memory  `  
 
 This allows you to direct inject code into both banks and any function roms
 (attach them in mode 2 RAM ), you can also inject data into VDC memory. Or CRAM
