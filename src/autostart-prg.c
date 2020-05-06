@@ -126,8 +126,6 @@ static autostart_prg_t * load_prg(const char *file_name, fileio_info_t *finfo, l
 static autostart_prg_t * load_prg_lnl(const char *file_name, fileio_info_t *finfo, log_t log)
 {
     uint32_t ptr;
-    uint32_t end;
-    uint8_t lo, hi;
     int i;
     autostart_prg_t *prg;
 
@@ -140,27 +138,6 @@ static autostart_prg_t * load_prg_lnl(const char *file_name, fileio_info_t *finf
     /* get data size of file */
     prg->size = fileio_get_bytes_left(finfo);
     prg->data = NULL;
-
-    /* read start address 
-    if ((fileio_read(finfo, &lo, 1) != 1) || (fileio_read(finfo, &hi, 1) != 1)) {
-        log_error(log, "Cannot read start address from '%s'", file_name);
-        return NULL;
-    }*/
-
-    /* get load addr 
-    if (autostart_basic_load) {
-        mem_get_basic_text(&prg->start_addr, NULL);
-    } else {
-        prg->start_addr = (uint16_t)hi << 8 | (uint16_t)lo;
-    }
-    prg->size -= 2; /* skip load addr */
-
-    /* check range 
-    end = prg->start_addr + prg->size - 1;
-    if (end > 0xffff) {
-        log_error(log, "Invalid size of '%s': %" PRIu32, file_name, prg->size);
-        return NULL;
-    }*/
 
     /* load to memory */
     prg->data = lib_malloc(prg->size);
@@ -435,7 +412,7 @@ int autostart_prg_perform_injection(log_t log)
         end = (uint16_t)(prg->start_addr + prg->size);
         mem_set_basic_text(start, end);
     } else { /* we have a lnl */
-        start = (uint16_t)NULL; /* make sure we read it */
+        start = (uint16_t)0; /* make sure we read it */
         mem_get_basic_text(&start, &end); /*I need to get the start address so I know where to look for*/
         if(start == 0) { /* does this work? */
             start = 0x1c01; /* assume 128 */
