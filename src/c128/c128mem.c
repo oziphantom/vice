@@ -944,10 +944,21 @@ uint8_t mem_read_screen(uint16_t addr)
 
 void mem_inject(uint32_t addr, uint8_t value)
 {
+    uint32_t bank = (addr >>16) & 0xff;
     /* this could be altered to handle more that 64 Kb in some
        useful way */
-    mem_ram[addr & 0xffff] = value;
-}
+    if(addr < 0x1ffff) {
+        mem_ram[addr & 0x1ffff] = value;
+    } else {
+        if( bank == 5 ) { /* int func rom */
+            internal_function_rom_store(addr,value);
+        } else if( bank == 6) { /* ext func rom */
+            external_function_rom_store(addr,value);
+        } else {
+            mem_bank_write((addr >> 16) & 0xff, addr & 0xffff, value, NULL);
+        }
+    }
+} 
 
 /* In banked memory architectures this will always write to the bank that
    contains the keyboard buffer and "number of keys in buffer", regardless of

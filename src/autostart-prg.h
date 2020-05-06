@@ -26,6 +26,7 @@
 
 #ifndef VICE_AUTOSTART_PRG_H
 #define VICE_AUTOSTART_PRG_H
+#include <stdbool.h>
 
 #include "types.h"
 #include "log.h"
@@ -35,13 +36,15 @@ struct autostart_prg_s {
     uint8_t *data;
     uint16_t start_addr;
     uint32_t size;
+    bool lnl;
 };
 typedef struct autostart_prg_s autostart_prg_t;
 
-#define AUTOSTART_PRG_MODE_VFS      0
-#define AUTOSTART_PRG_MODE_INJECT   1
-#define AUTOSTART_PRG_MODE_DISK     2
-#define AUTOSTART_PRG_MODE_LAST     2
+#define AUTOSTART_PRG_MODE_VFS          0
+#define AUTOSTART_PRG_MODE_INJECT       1
+#define AUTOSTART_PRG_MODE_DISK         2
+#define AUTOSTART_PRG_MODE_LNL_INJECT   3 
+#define AUTOSTART_PRG_MODE_LAST         3
 #define AUTOSTART_PRG_MODE_DEFAULT  AUTOSTART_PRG_MODE_DISK
 
 extern void autostart_prg_init(void);
@@ -54,6 +57,8 @@ extern int autostart_prg_with_ram_injection(const char *file_name,
 extern int autostart_prg_with_disk_image(const char *file_name,
                                          fileio_info_t *fh, log_t log,
                                          const char *image_name);
+extern int autostart_prg_lnl_with_ram_injection(const char *file_name,
+                                            fileio_info_t *fh, log_t log);
 
 extern int autostart_prg_perform_injection(log_t log);
 

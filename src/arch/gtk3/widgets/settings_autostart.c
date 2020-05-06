@@ -58,6 +58,7 @@ static const vice_gtk3_radiogroup_entry_t autostart_modes[] = {
     { "Virtual FS",         AUTOSTART_PRG_MODE_VFS /* 0 */ },
     { "Inject into RAM",    AUTOSTART_PRG_MODE_INJECT /* 1 */ },
     { "Copy to D64",        AUTOSTART_PRG_MODE_DISK /* 2 */ },
+    { "Inject into RAM LNL",AUTOSTART_PRG_MODE_LNL_INJECT /* 3 */ },
    { NULL, -1 }
 };
 

@@ -1479,6 +1479,7 @@ static void setup_for_prg(int mode)
             resources_set_int("FileSystemDevice8", ATTACH_DEVICE_FS); /* FIXME: not preserved */
             break;
         case AUTOSTART_PRG_MODE_INJECT:
+        case AUTOSTART_PRG_MODE_LNL_INJECT:
             break;
         case AUTOSTART_PRG_MODE_DISK:
             setup_for_disk();
@@ -1535,6 +1536,12 @@ int autostart_prg(const char *file_name, unsigned int runmode)
         case AUTOSTART_PRG_MODE_INJECT:
             log_message(autostart_log, "Loading PRG file `%s' with direct RAM injection.", file_name);
             result = autostart_prg_with_ram_injection(file_name, finfo, autostart_log);
+            mode = AUTOSTART_INJECT;
+            boot_file_name = NULL;
+            break;
+        case AUTOSTART_PRG_MODE_LNL_INJECT:
+            log_message(autostart_log, "Loading PRG-LNL file `%s' with direct RAM injection.", file_name);
+            result = autostart_prg_lnl_with_ram_injection(file_name, finfo, autostart_log);
             mode = AUTOSTART_INJECT;
             boot_file_name = NULL;
             break;

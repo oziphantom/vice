@@ -74,6 +74,7 @@ static autostart_prg_t * load_prg(const char *file_name, fileio_info_t *finfo, l
         return NULL;
     }
 
+    prg->lnl = false;
     /* get data size of file */
     prg->size = fileio_get_bytes_left(finfo);
     prg->data = NULL;
@@ -110,6 +111,68 @@ static autostart_prg_t * load_prg(const char *file_name, fileio_info_t *finfo, l
     ptr = prg->start_addr;
     i = 0;
     while (ptr <= end) {
+        if (fileio_read(finfo, &(prg->data[i]), 1) != 1) {
+            log_error(log, "Error loading data from '%s'", file_name);
+            lib_free(prg->data);
+            return NULL;
+        }
+        ptr++;
+        i++;
+    }
+
+    return prg;
+}
+
+static autostart_prg_t * load_prg_lnl(const char *file_name, fileio_info_t *finfo, log_t log)
+{
+    uint32_t ptr;
+    uint32_t end;
+    uint8_t lo, hi;
+    int i;
+    autostart_prg_t *prg;
+
+    prg = lib_malloc(sizeof(autostart_prg_t));
+    if (prg == NULL) {
+        return NULL;
+    }
+
+    prg->lnl = true;
+    /* get data size of file */
+    prg->size = fileio_get_bytes_left(finfo);
+    prg->data = NULL;
+
+    /* read start address 
+    if ((fileio_read(finfo, &lo, 1) != 1) || (fileio_read(finfo, &hi, 1) != 1)) {
+        log_error(log, "Cannot read start address from '%s'", file_name);
+        return NULL;
+    }*/
+
+    /* get load addr 
+    if (autostart_basic_load) {
+        mem_get_basic_text(&prg->start_addr, NULL);
+    } else {
+        prg->start_addr = (uint16_t)hi << 8 | (uint16_t)lo;
+    }
+    prg->size -= 2; /* skip load addr */
+
+    /* check range 
+    end = prg->start_addr + prg->size - 1;
+    if (end > 0xffff) {
+        log_error(log, "Invalid size of '%s': %" PRIu32, file_name, prg->size);
+        return NULL;
+    }*/
+
+    /* load to memory */
+    prg->data = lib_malloc(prg->size);
+    if (prg->data == NULL) {
+        log_error(log, "No memory for '%s'", file_name);
+        return NULL;
+    }
+
+    /* copy data to memory */
+    ptr = prg->start_addr;
+    i = 0;
+    while (i < prg->size) {
         if (fileio_read(finfo, &(prg->data[i]), 1) != 1) {
             log_error(log, "Error loading data from '%s'", file_name);
             lib_free(prg->data);
@@ -188,6 +251,20 @@ int autostart_prg_with_ram_injection(const char *file_name,
 
     /* load program file into memory */
     inject_prg = load_prg(file_name, fh, log);
+    return (inject_prg == NULL) ? -1 : 0;
+}
+
+int autostart_prg_lnl_with_ram_injection(const char *file_name,
+                                     fileio_info_t *fh,
+                                     log_t log)
+{
+    /* clean up old injection */
+    if (inject_prg != NULL) {
+        free_prg(inject_prg);
+    }
+
+    /* load program file into memory */
+    inject_prg = load_prg_lnl(file_name, fh, log);
     return (inject_prg == NULL) ? -1 : 0;
 }
 
@@ -334,7 +411,7 @@ int autostart_prg_with_disk_image(const char *file_name,
 
 int autostart_prg_perform_injection(log_t log)
 {
-    unsigned int i;
+    unsigned int i, size, j, seg_start;
     uint16_t start, end;
 
     autostart_prg_t *prg = inject_prg;
@@ -347,15 +424,38 @@ int autostart_prg_perform_injection(log_t log)
     log_message(autostart_log, "Injecting program data at $%04x (size $%04x)",
                 prg->start_addr, (unsigned int)prg->size);
 
-    /* store data in emu memory */
-    for (i = 0; i < prg->size; i++) {
-        mem_inject((uint16_t)(prg->start_addr + i), prg->data[i]);
-    }
+    if( prg->lnl == false ) {/*just a normal prg */
+        /* store data in emu memory */
+        for (i = 0; i < prg->size; i++) {
+            mem_inject((uint16_t)(prg->start_addr + i), prg->data[i]);
+        }
 
-    /* now simulate a basic load */
-    mem_get_basic_text(&start, &end);
-    end = (uint16_t)(prg->start_addr + prg->size);
-    mem_set_basic_text(start, end);
+        /* now simulate a basic load */
+        mem_get_basic_text(&start, &end);
+        end = (uint16_t)(prg->start_addr + prg->size);
+        mem_set_basic_text(start, end);
+    } else { /* we have a lnl */
+        start = (uint16_t)NULL; /* make sure we read it */
+        mem_get_basic_text(&start, &end); /*I need to get the start address so I know where to look for*/
+        if(start == 0) { /* does this work? */
+            start = 0x1c01; /* assume 128 */
+        }
+        i = 0;
+        while( (prg->data[i] | prg->data[i+1] | prg->data[i+2]) != 0) { /*until we reach a segment of size 0*/
+            size = prg->data[i] + (prg->data[i+1] * 256) +(prg->data[i+2] * 65536);
+            i += 3; 
+            seg_start = prg->data[i] + (prg->data[i+1] * 256) +(prg->data[i+2] * 65536);
+            i += 3;
+            if(seg_start == start) {
+                end = start + size;
+                mem_set_basic_text(start, end);
+            }
+            for(j = 0; j < size; j++) {
+                mem_inject((seg_start + j), prg->data[i+j]);
+            }
+            i += size;
+        }
+    }
 
     /* clean up injected prog */
     free_prg(inject_prg);
