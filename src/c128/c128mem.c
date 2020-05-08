@@ -951,9 +951,9 @@ void mem_inject(uint32_t addr, uint8_t value)
         mem_ram[addr & 0x1ffff] = value;
     } else {
         if( bank == 5 ) { /* int func rom */
-            internal_function_rom_store(addr,value);
+            internal_function_ram_store(addr,value);
         } else if( bank == 6) { /* ext func rom */
-            external_function_rom_store(addr,value);
+            external_function_ram_store(addr,value);
         } else {
             mem_bank_write((addr >> 16) & 0xff, addr & 0xffff, value, NULL);
         }

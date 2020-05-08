@@ -323,6 +323,21 @@ uint8_t internal_function_rom_read(uint16_t addr)
     return int_function_rom[addr & (INTERNAL_FUNCTION_ROM_SIZE - 1)];
 }
 
+/* this is used for ram injection into the function "ram" it does not touch actual RAM */
+void internal_function_ram_store(uint16_t addr, uint8_t value)
+{
+    if (internal_function_rom_enabled == INT_FUNCTION_RAM) {
+        int_function_rom[addr & (INTERNAL_FUNCTION_ROM_SIZE - 1)] = value;
+    }
+}
+
+void external_function_ram_store(uint16_t addr, uint8_t value)
+{
+    if (external_function_rom_enabled == EXT_FUNCTION_RAM) {
+        ext_function_rom[addr & (EXTERNAL_FUNCTION_ROM_SIZE - 1)] = value;
+    }
+}
+
 void internal_function_rom_store(uint16_t addr, uint8_t value)
 {
     if (internal_function_rom_enabled == INT_FUNCTION_RTC) {
