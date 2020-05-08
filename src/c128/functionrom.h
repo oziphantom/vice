@@ -39,6 +39,8 @@ extern void internal_function_top_shared_store(uint16_t addr, uint8_t value);
 extern uint8_t external_function_rom_read(uint16_t addr);
 extern void external_function_rom_store(uint16_t addr, uint8_t value);
 extern void external_function_top_shared_store(uint16_t addr, uint8_t value);
+extern void internal_function_ram_store(uint16_t addr, uint8_t value);
+extern void external_function_ram_store(uint16_t addr, uint8_t value);
 
 extern int functionrom_resources_init(void);
 extern void functionrom_resources_shutdown(void);
